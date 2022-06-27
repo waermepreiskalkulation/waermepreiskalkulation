@@ -153,6 +153,34 @@
         { time: '2022-11', value: 0 },
         { time: '2022-12', value: 0 },
     ]
+    const lexnStats = [
+        { time: '2022-01', value: 0 },
+        { time: '2022-02', value: 0 },
+        { time: '2022-03', value: 0 },
+        { time: '2022-04', value: 0 },
+        { time: '2022-05', value: 0 },
+        { time: '2022-06', value: 0 },
+        { time: '2022-07', value: 0 },
+        { time: '2022-08', value: 0 },
+        { time: '2022-09', value: 0 },
+        { time: '2022-10', value: 0 },
+        { time: '2022-11', value: 0 },
+        { time: '2022-12', value: 0 },
+    ]
+    const mxnStats = [
+        { time: '2022-01', value: 0 },
+        { time: '2022-02', value: 0 },
+        { time: '2022-03', value: 0 },
+        { time: '2022-04', value: 0 },
+        { time: '2022-05', value: 0 },
+        { time: '2022-06', value: 0 },
+        { time: '2022-07', value: 0 },
+        { time: '2022-08', value: 0 },
+        { time: '2022-09', value: 0 },
+        { time: '2022-10', value: 0 },
+        { time: '2022-11', value: 0 },
+        { time: '2022-12', value: 0 },
+    ]
 
     var house = 86.38; // Petersberg
     var ghgxn = 200;
@@ -190,9 +218,25 @@
         calc();
     });
 
-    const chart = LightweightCharts.createChart(document.getElementById('stats'), { width: 600, height: 300 });
-    const gasPreisChart = chart.addLineSeries({title: 'GHGXn', priceLineColor: '#ff0000', baseLineColor: '#FF0000'});
-    const egixChart = chart.addLineSeries({title: 'XEGIn', priceLineColor: '#0000ff', baseLineColor: '#0000FF'});
+    const chartOptions = {
+        width: 600,
+        height: 300,
+        handleScroll: false,
+        handleScale: false,
+        grid: { 
+            vertLines: {
+                visible: false
+            },
+            horzLines: {
+                visible: false
+            }
+        }
+    };
+    const chart = LightweightCharts.createChart(document.getElementById('stats'), chartOptions);
+    const gasPreisChart = chart.addLineSeries({title: 'GHGXn', priceLineColor: '#ff0000', color: '#ff0000'});
+    const egixChart = chart.addLineSeries({title: 'XEGIn', priceLineColor: '#0000ff', color: '#0000ff'});
+    const lexnChart = chart.addLineSeries({title: 'LEXn', priceLineColor: '#00ff00', color: '#00ff00'});
+    const mxnChart = chart.addLineSeries({title: 'MXn', priceLineColor: '#ff7f00', color: '#ff7f00'});
 
     function calc() {
         // calc GHGXn
@@ -218,6 +262,9 @@
         const XEGInXEGI = 0.5 * newXEGIn / 22.91;
         console.log(`0.5 * ${newXEGIn} / 22.91 = ${round(XEGInXEGI)}`);
 
+        lexnStats.forEach(elem => elem.value = lexn)
+        mxnStats.forEach(elem => elem.value = mxn)
+
         const nettoArbeitsPreis = 59 * (GHGXnGHGX + XEGInXEGI)
         const bruttoArbeitspreis = nettoArbeitsPreis * 1.19;
         const nettoGrundPreis = house * ( 0.8 + (0.08 * lexn / LEX) + (0.12 * mxn / MX));
@@ -228,11 +275,13 @@
         $('#summaryGP04n').html(`${round(nettoGrundPreis)}€`);
         $('#summaryKWh').html(`${kwh / 1000}MWh`);
         $('#summaryGP04nMonth').html(`${round(bruttoGrundPreis)}€`);
-        $('#summaryGP04nTotal').html(`${round(bruttoGrundPreis) * 12}€`);
+        $('#summaryGP04nTotal').html(`${round(bruttoGrundPreis * 12)}€`);
         $('#summaryAP01nTotal').html(`${round(verbrauchsPreis)}€`);
         
         gasPreisChart.setData(ghgxnStats);
         egixChart.setData(xeginStats);
+        lexnChart.setData(lexnStats);
+        mxnChart.setData(mxnStats);
         chart.timeScale().fitContent();
 
         $('#totalCost').html(`${round((bruttoGrundPreis * 12) + verbrauchsPreis)}€<br>Abschlag: ${round(bruttoGrundPreis + (verbrauchsPreis / 12))}€`);
