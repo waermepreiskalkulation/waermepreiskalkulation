@@ -13,6 +13,7 @@
   <!-- Scripts -->
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script type="text/javascript" src="https://unpkg.com/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/@popperjs/core@2.11.5/dist/umd/popper.min.js"></script>
   <script type="text/javascript" src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script"></script>
   <!-- Stylesheets -->
@@ -20,18 +21,18 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"/>
   <style>
     @import url('https://fonts.googleapis.com/css?family=Roboto:400,900');
+    body { overflow-y: scroll; }
     .container{ width: 100%; display: block; padding: 0px; justify-content: space-evenly !important; }
     .product-name { font-family: 'Roboto', sans-serif; font-size: 20px; color: #ffffff; }
     input { border:1px solid #eaeaea; font-family: 'Roboto', sans-serif; outline:none; }
     input#number:hover { border-color: #a0a0a0 #b9b9b9 #b9b9b9 #b9b9b9; }
     input#number:focus { border-color: #28a745; }
+    .info-icon { color:#E89700; margin-right: 5px; cursor: pointer; }
     .rel { position: relative; }
     .center { margin: 5px auto; }
-    .center button { min-width: 95px !important; vertical-align: baseline; height: 35px; margin-right: 5px; }
-    .center button#call-button { margin: 0px !important; }
-    .center button.hidden { display: none !important; }
+    .center button { float: right; }
     .content .center { width: 600px; }
-    .content input,select { resize: none; padding: 5px; margin-right: 5px; }
+    .content input,select { padding: 5px; height: 2.5rem !important; }
     .total-cost { font-size: 40px !important; text-align: center; }
   </style>
 </head>
@@ -39,7 +40,7 @@
 <div class="container" id="home-container">
     <div class="content rel">
         <div class="center">
-            <label for="haustyp" class="form-label">Haustyp</label>
+            <label for="haustyp" class="form-label">Haustyp</label><button class="btn btn-sm" onclick="toggleAdvanced()"><i class="fa-solid fa-gear" data-toggle="tooltip" title="Weitere Einstellungen anzeigen."></i></button>
             <select class="form-select" aria-label="Haustyp" id="haustyp">
                 <option value="7512">Achat</option>
                 <option value="9360">Bergkristall</option>
@@ -50,27 +51,39 @@
             </select>
         </div>
         <div class="center">
-            <label for="ghgxn" class="form-label">Erzeugerpreise Gas (GHGXn)</label>
-            <input type="range" class="form-range" min="50" max="1000" step="1.0" id="ghgxn">
+            <label for="kwh" class="form-label"><i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="Der geschätzte Jahresverbrauch. Anhaltspunkt kann die letzte Jahresabrechnung sein."></i><text id="kwh-label"></text></label>
+            <input type="range" class="form-range" min="5000" max="20000" step="100" id="kwh">
         </div>
-        <div class="center">
-            <label for="xegin" class="form-label">European Gas Index (XEGIn)</label>
-            <input type="range" class="form-range" min="50" max="500" step="1.0" id="xegin">
+        <div class="center advanced-settings">
+            <label for="ghgxn" class="form-label">
+            <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>Erdgaspreis für Handel und Gewerbe (GP09-352222-01)</em><br>Bereitgestellt vom Statistischen Bundesamt auf Monatsbasis (<a class='link-primary' href='https://www-genesis.destatis.de/genesis/online?sequenz=tabelleErgebnis&selectionname=61241-0006&leerzeilen=false' target=_blank>destatis.de</a>). Wird zur Errechnung des Arbeitspreises (AP01n) der Abrechnungsperiode herangezogen. Die Veränderung bezieht sich auf das Vorjahr."></i>
+            Erdgas für Handel und Gewerbe (GHGXn)<text style="margin-left: 5px;" id="ghgxn-diff"></text></label>
+            <input type="range" class="form-range" min="1" max="750" step="1.0" id="ghgxn">
         </div>
-        <div class="center">
-            <label for="lexn" class="form-label">Index tariflicher Monatsgehälter (LEXn)</label>
+        <div class="center advanced-settings">
+            <label for="xegin" class="form-label">
+            <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>European Gas Index (EGIX)</em><br>Entspricht jederzeit dem aktuellen Marktpreis für Gaslieferungen im nächsten Monat (<a class='link-primary' href='https://www.eex.com/de/marktdaten/erdgas/egix-index' target=_blank>eex.com</a>). Wird zur Errechnung des Arbeitspreises (AP01n) der Abrechnungsperiode herangezogen. Die Veränderung bezieht sich auf das Vorjahr."></i>
+            European Gas Index (XEGIn)<text style="margin-left: 5px;" id="xegin-diff"></text></label>
+            <input type="range" class="form-range" min="1" max="500" step="1.0" id="xegin">
+        </div>
+        <div class="center advanced-settings">
+            <label for="lexn" class="form-label">
+            <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>Index der tariflichen Monats- und Stundenverdienste</em><br>Bereitgestellt vom Statistischen Bundesamt auf Monatsbasis (<a class='link-primary' href='https://www.destatis.de/DE/Themen/Arbeit/Verdienste/Tarifverdienste-Tarifbindung/Tabellen/Tarifindex.html' target=_blank>destatis.de</a>). Wird zur Errechnung des Grundpreises (GP04n) der Abrechnungsperiode herangezogen. Die Veränderung bezieht sich auf das Vorjahr."></i>
+            Index tariflicher Monats- und Stundenverdienste (LEXn)<text style="margin-left: 5px;" id="lexn-diff"></text></label>
             <input type="range" class="form-range" min="50" max="250" step="0.5" id="lexn">
         </div>
-        <div class="center">
-            <label for="mxn" class="form-label">Index Erzeugerpreise "gewerbliche Erzeugnisse" (MXn)</label>
+        <div class="center advanced-settings">
+            <label for="mxn" class="form-label">
+            <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>Preise und Preisindizes für gewerbliche Produkte (insgesamt)</em><br>Bereitgestellt vom Statistischen Bundesamt auf Monatsbasis (<a class='link-primary' href='https://www.destatis.de/DE/Themen/Wirtschaft/Preise/Erzeugerpreisindex-gewerbliche-Produkte/Publikationen/_publikationen-innen-erzeugerpreise-monat.html' target=_blank>destatis.de</a>). Wird zur Errechnung des Grundpreises (GP04n) der Abrechnungsperiode herangezogen. Die Veränderung bezieht sich auf das Vorjahr."></i>
+            Index Erzeugerpreise "gewerbliche Erzeugnisse" (MXn)<text style="margin-left: 5px;" id="mxn-diff"></text></label>
             <input type="range" class="form-range" min="50" max="250" step="0.5" id="mxn">
         </div>
         <div class="center">
-            <label for="kwh" class="form-label">Jahresverbrauch</label>
-            <input type="range" class="form-range" min="5000" max="20000" step="100" id="kwh">
+            <div id="totalCost" class="total-cost"></div>
         </div>
         <div class="center">
-            <div id="totalCost" class="total-cost"></div>
+            <div id="formulaAP01n"></div>
+            <div id="formulaGP04n"></div>
         </div>
         <div class="center">
             <div>
@@ -107,10 +120,6 @@
             </div>
         </div>
         <div class="center">
-            <div id="formulaAP01n"></div>
-            <div id="formulaGP04n"></div>
-        </div>
-        <div class="center">
             <div id="stats"></div>
         </div>
     </div>
@@ -119,10 +128,15 @@
 <script type="text/javascript">
     const month = [ 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember' ];
     const gradTag = [ 17, 15, 13, 8, 4, (4/3), (4/3), (4/3), 3, 8, 12, 16 ];
+    const ghgxn2021 = [ 95.6, 96.5, 97.8, 98.3, 98.4, 98.8, 99.6, 100.5, 101.5, 106.1, 115.7, 115.7 ];
     const ghgxnFix = [ 147.6, 147.2, 159.8, 164.0, 165.6 ];
+    const xegin2021 = [ 16.025, 19.713, 17.639, 17.733, 20.534, 24.994, 28.846, 35.794, 44.026, 63.263, 94.050, 81.027 ];
     const xeginFix = [ 114.983, 85.545, 81.616, 133.486, 104.736, 95.448 ];
     const ghgx = 101.2;
+    const co22021 = 4.55;
     const co2 = 5.46;
+    const lexn2021 = 100.7;
+    const mxn2021 = 106.2;
     const LEX = 88.8;
     const MX = 100.3;
     const ghgxnStats = [
@@ -187,12 +201,13 @@
     $('#ghgxn').val(ghgxn);
     var xegin = 130;
     $('#xegin').val(xegin);
-    var lexn = 101.5;
+    var lexn = 102.0;
     $('#lexn').val(lexn);
     var mxn = 147.5;
     $('#mxn').val(mxn);
     var kwh = 7500;
     $('#kwh').val(kwh);
+    $('#kwh-label').html(`Jahresverbrauch: <b>${(kwh / 1000).toFixed(1)}</b> MWh`);
     $('#haustyp').change(() => {
         house = parseInt($('#haustyp').val()) / 100;
         calc();
@@ -215,6 +230,7 @@
     });
     $('#kwh').change(() => {
         kwh = $('#kwh').val();
+        $('#kwh-label').html(`Jahresverbrauch: <b>${(kwh / 1000).toFixed(1)}</b> MWh`);
         calc();
     });
 
@@ -241,29 +257,67 @@
     function calc() {
         // calc GHGXn
         var newGHGXn = 0;
+        var GHGXnAvg2021 = 0;
         for (let i = 0; i < month.length; i++) {
             const ghgxMonth = ghgxnFix[i] || ghgxn;
             ghgxnStats[i].value = ghgxMonth;
             const ghgxCalc = (gradTag[i] * ghgxMonth / 100);
+            const ghgxCalc2021 = (gradTag[i] * ghgxn2021[i] / 100);
             newGHGXn += ghgxCalc;
+            GHGXnAvg2021 += ghgxCalc2021;
             console.log(`${month[i]} Gradtag:${gradTag[i]} Preis:${ghgxMonth} GHGXn:${ghgxCalc}/${newGHGXn}`);
         }
         const GHGXnGHGX = 0.5 * (newGHGXn / ghgx);
         console.log(`0.5 * ${newGHGXn} / ${ghgx} = ${round(GHGXnGHGX)}`);
+        const GHGXnDiff = round((newGHGXn / GHGXnAvg2021 - 1) * 100);
+        if (GHGXnDiff < 0) {
+            $('#ghgxn-diff').html(`<i class="fa-solid fa-arrow-down"></i> ${GHGXnDiff}%`);
+            $('#ghgxn-diff').css('color', '#3CC119');
+        } else {
+            $('#ghgxn-diff').html(`<i class="fa-solid fa-arrow-up"></i> ${GHGXnDiff}%`);
+            $('#ghgxn-diff').css('color', '#E20D0D');
+        }
         // calc XEGIn
         var newXEGIn = 0;
+        var XEGInAvg2021 = 0;
         for (let i = 0; i < month.length; i++) {
             const xegiMonth = xeginFix[i] || xegin;
             xeginStats[i].value = xegiMonth;
             const xegiCalc = gradTag[i] * ((xegiMonth / 100) + (co2 / 100))
+            const xegiCalc2021 = gradTag[i] * ((xegin2021[i] / 100) + (co22021 / 100))
             newXEGIn += xegiCalc;
+            XEGInAvg2021 += xegiCalc2021;
             console.log(`${month[i]} Gradtag:${gradTag[i]} Preis:${xegiMonth} XEGIn:${xegiCalc}/${newXEGIn}`);
         }
         const XEGInXEGI = 0.5 * newXEGIn / 22.91;
         console.log(`0.5 * ${newXEGIn} / 22.91 = ${round(XEGInXEGI)}`);
+        const XEGInDiff = round((newXEGIn / XEGInAvg2021 - 1) * 100);
+        if (XEGInDiff < 0) {
+            $('#xegin-diff').html(`<i class="fa-solid fa-arrow-down"></i> ${XEGInDiff}%`);
+            $('#xegin-diff').css('color', '#3CC119');
+        } else {
+            $('#xegin-diff').html(`<i class="fa-solid fa-arrow-up"></i> ${XEGInDiff}%`);
+            $('#xegin-diff').css('color', '#E20D0D');
+        }
 
         lexnStats.forEach(elem => elem.value = lexn)
+        const lexnDiff = round((lexn / lexn2021 - 1) * 100);
+        if (lexnDiff < 0) {
+            $('#lexn-diff').html(`<i class="fa-solid fa-arrow-down"></i> ${lexnDiff}%`);
+            $('#lexn-diff').css('color', '#3CC119');
+        } else {
+            $('#lexn-diff').html(`<i class="fa-solid fa-arrow-up"></i> ${lexnDiff}%`);
+            $('#lexn-diff').css('color', '#E20D0D');
+        }
         mxnStats.forEach(elem => elem.value = mxn)
+        const mxnDiff = round((mxn / mxn2021 - 1) * 100);
+        if (mxnDiff < 0) {
+            $('#mxn-diff').html(`<i class="fa-solid fa-arrow-down"></i> ${mxnDiff}%`);
+            $('#mxn-diff').css('color', '#3CC119');
+        } else {
+            $('#mxn-diff').html(`<i class="fa-solid fa-arrow-up"></i> ${mxnDiff}%`);
+            $('#mxn-diff').css('color', '#E20D0D');
+        }
 
         const nettoArbeitsPreis = 59 * (GHGXnGHGX + XEGInXEGI)
         const bruttoArbeitspreis = nettoArbeitsPreis * 1.19;
@@ -292,9 +346,37 @@
     }
 
     calc();
+    $('.advanced-settings').addClass('d-none');
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip({html: true, trigger: 'manual'})
+        .on("mouseenter", function () {
+            const _this = this;
+            $(_this).tooltip("show");
+            $(".tooltip").on("mouseleave", function () {
+                $(_this).tooltip('hide');
+            });
+        }).on("mouseleave", function () {
+            const _this = this;
+            setTimeout(function () {
+                if (!$(".tooltip:hover").length) {
+                    $(_this).tooltip("hide");
+                }
+            }, 300);
+        });
+    });
 
     function round(val) {
         return Math.round(val * 100) / 100;
+    }
+    function toggleAdvanced() {
+        if ($('.advanced-settings').hasClass('d-none'))
+        {
+            $('.advanced-settings').removeClass('d-none');
+        }
+        else
+        {
+            $('.advanced-settings').addClass('d-none');
+        }
     }
 </script>
 </body></html>
