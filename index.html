@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=600, initial-scale=1, user-scalable=0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Berechnung des Wärmepreises für den Blumengarten">
   <meta name="author" content="Sven Beisiegel">
   <title>Wärmepreiskalkulation</title>
@@ -128,6 +128,7 @@
 <script type="text/javascript">
     const month = [ 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember' ];
     const gradTag = [ 17, 15, 13, 8, 4, (4/3), (4/3), (4/3), 3, 8, 12, 16 ];
+    const AP01 = 59;
     const ghgxn2021 = [ 95.6, 96.5, 97.8, 98.3, 98.4, 98.8, 99.6, 100.5, 101.5, 106.1, 115.7, 115.7 ];
     const ghgxnFix = [ 147.6, 147.2, 159.8, 164.0, 165.6 ];
     const xegin2021 = [ 16.025, 19.713, 17.639, 17.733, 20.534, 24.994, 28.846, 35.794, 44.026, 63.263, 94.050, 81.027 ];
@@ -319,7 +320,7 @@
             $('#mxn-diff').css('color', '#E20D0D');
         }
 
-        const nettoArbeitsPreis = 59 * (GHGXnGHGX + XEGInXEGI)
+        const nettoArbeitsPreis = AP01 * (GHGXnGHGX + XEGInXEGI)
         const bruttoArbeitspreis = nettoArbeitsPreis * 1.19;
         const nettoGrundPreis = house * ( 0.8 + (0.08 * lexn / LEX) + (0.12 * mxn / MX));
         const bruttoGrundPreis = nettoGrundPreis * 1.19;
@@ -339,8 +340,8 @@
         chart.timeScale().fitContent();
 
         $('#totalCost').html(`${round((bruttoGrundPreis * 12) + verbrauchsPreis)}€<br>Abschlag: ${round(bruttoGrundPreis + (verbrauchsPreis / 12))}€`);
-        $('#formulaAP01n').text(`\\[AP01n = 0.5 * {${round(newGHGXn)} \\over ${ghgx}} + 0.5 * {${round(newXEGIn)} \\over 22.91}\\]`);
-        $('#formulaGP04n').text(`\\[GP04n = ${house} * 0.8 + 0.08 * {${round(lexn)} \\over ${LEX}} + 0.12 * {${round(mxn)} \\over ${MX}}\\]`);
+        $('#formulaAP01n').text(`\\[AP01n = ${AP01} * (0.5 * {${round(newGHGXn)} \\over ${ghgx}} + 0.5 * {${round(newXEGIn)} \\over 22.91})\\]`);
+        $('#formulaGP04n').text(`\\[GP04n = ${house} * (0.8 + 0.08 * {${round(lexn)} \\over ${LEX}} + 0.12 * {${round(mxn)} \\over ${MX}})\\]`);
         MathJax.typeset();
         console.log(`ghgxn:${ghgxn} xegin:${xegin} bruttoArbeitspreis:${bruttoArbeitspreis} bruttoGrundPreis:${bruttoGrundPreis}`);
     }
