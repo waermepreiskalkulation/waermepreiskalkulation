@@ -38,9 +38,9 @@
     .content input,select { padding: 5px; height: 3rem !important; }
     .total-cost { font-size: 40px !important; text-align: center; }
     .form-label { padding: 5px 0px 0px 0px !important; margin: 0px !important; font-size: 0.9rem !important; }
-    .form-label text { font-size: 1rem !important; }
     .fa-gear { font-size: 25px; }
     .MathJax { font-size: 1rem !important; }
+    #stats > div { margin: auto !important; }
   </style>
 </head>
 <body>
@@ -67,25 +67,25 @@
         <div class="center advanced-settings">
             <label for="ghgxn" class="form-label">
             <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>Erdgaspreis für Handel und Gewerbe (GP09-352222-01)</em><br>Bereitgestellt vom Statistischen Bundesamt auf Monatsbasis (<a class='link-primary' href='https://www-genesis.destatis.de/genesis/online?sequenz=tabelleErgebnis&selectionname=61241-0006&leerzeilen=false' target=_blank>destatis.de</a>). Wird zur Errechnung des Arbeitspreises (AP01n) der Abrechnungsperiode herangezogen. Der farbliche Wert zeigt die durchschnittliche prozentuale Veränderung zum Vorjahr."></i>
-            Erdgas für Handel und Gewerbe (GHGXn)<text style="margin-left: 5px;" id="ghgxn-diff"></text></label>
+            <text id="ghgxn-label"></text><text style="margin-left: 5px;" id="ghgxn-diff"></text></label>
             <input type="range" class="form-range" min="1" max="750" step="1.0" id="ghgxn">
         </div>
         <div class="center advanced-settings">
             <label for="xegin" class="form-label">
             <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>European Gas Index (EGIX)</em><br>Entspricht jederzeit dem aktuellen Marktpreis für Gaslieferungen im nächsten Monat (<a class='link-primary' href='https://www.eex.com/de/marktdaten/erdgas/egix-index' target=_blank>eex.com</a>). Wird zur Errechnung des Arbeitspreises (AP01n) der Abrechnungsperiode herangezogen. Der farbliche Wert zeigt die durchschnittliche prozentuale Veränderung zum Vorjahr."></i>
-            European Gas Index (XEGIn)<text style="margin-left: 5px;" id="xegin-diff"></text></label>
+            <text id="xegin-label"></text><text style="margin-left: 5px;" id="xegin-diff"></text></label>
             <input type="range" class="form-range" min="1" max="500" step="1.0" id="xegin">
         </div>
         <div class="center advanced-settings">
             <label for="lexn" class="form-label">
             <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>Index der tariflichen Monats- und Stundenverdienste</em><br>Bereitgestellt vom Statistischen Bundesamt auf Monatsbasis (<a class='link-primary' href='https://www.destatis.de/DE/Themen/Arbeit/Verdienste/Tarifverdienste-Tarifbindung/Tabellen/Tarifindex.html' target=_blank>destatis.de</a>). Wird zur Errechnung des Grundpreises (GP04n) der Abrechnungsperiode herangezogen. Der farbliche Wert zeigt die durchschnittliche prozentuale Veränderung zum Vorjahr."></i>
-            Index tariflicher Monats- und Stundenverdienste (LEXn)<text style="margin-left: 5px;" id="lexn-diff"></text></label>
+            <text id="lexn-label"></text><text style="margin-left: 5px;" id="lexn-diff"></text></label>
             <input type="range" class="form-range" min="50" max="250" step="0.5" id="lexn">
         </div>
         <div class="center advanced-settings">
             <label for="mxn" class="form-label">
             <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>Preise und Preisindizes für gewerbliche Produkte (insgesamt)</em><br>Bereitgestellt vom Statistischen Bundesamt auf Monatsbasis (<a class='link-primary' href='https://www.destatis.de/DE/Themen/Wirtschaft/Preise/Erzeugerpreisindex-gewerbliche-Produkte/Publikationen/_publikationen-innen-erzeugerpreise-monat.html' target=_blank>destatis.de</a>). Wird zur Errechnung des Grundpreises (GP04n) der Abrechnungsperiode herangezogen. Der farbliche Wert zeigt die durchschnittliche prozentuale Veränderung zum Vorjahr."></i>
-            Index Erzeugerpreise "gewerbliche Erzeugnisse" (MXn)<text style="margin-left: 5px;" id="mxn-diff"></text></label>
+            <text id="mxn-label"></text><text style="margin-left: 5px;" id="mxn-diff"></text></label>
             <input type="range" class="form-range" min="50" max="250" step="0.5" id="mxn">
         </div>
         <div class="center">
@@ -210,12 +210,16 @@
     var house = 86.38; // Petersberg
     var ghgxn = 200;
     $('#ghgxn').val(ghgxn);
+    $('#ghgxn-label').html(`Erdgas Handel und Gewerbe (GHGXn) | <b>${ghgxn}€</b> |`);
     var xegin = 130;
     $('#xegin').val(xegin);
+    $('#xegin-label').html(`European Gas Index (XEGIn) | <b>${xegin}€</b> |`);
     var lexn = 102.0;
     $('#lexn').val(lexn);
+    $('#lexn-label').html(`Index tariflicher Löhne (LEXn) | <b>${lexn}€</b> |`);
     var mxn = 147.5;
     $('#mxn').val(mxn);
+    $('#mxn-label').html(`Index Erzeugerpreise (MXn) | <b>${mxn}€</b> |`);
     var kwh = 7500;
     $('#kwh').val(kwh);
     $('#kwh-label').html(`Jahresverbrauch: <b>${(kwh / 1000).toFixed(1)}</b> MWh`);
@@ -225,18 +229,22 @@
     });
     $('#ghgxn').change(() => {
         ghgxn = $('#ghgxn').val();
+        $('#ghgxn-label').html(`Erdgas Handel und Gewerbe (GHGXn) | <b>${ghgxn}€</b> |`);
         calc();
     });
     $('#xegin').change(() => {
         xegin = $('#xegin').val();
+        $('#xegin-label').html(`European Gas Index (XEGIn) | <b>${xegin}€</b> |`);
         calc();
     });
     $('#lexn').change(() => {
         lexn = $('#lexn').val();
+        $('#lexn-label').html(`Index tariflicher Löhne (LEXn) | <b>${lexn}€</b> |`);
         calc();
     });
     $('#mxn').change(() => {
         mxn = $('#mxn').val();
+        $('#mxn-label').html(`Index Erzeugerpreise (MXn) | <b>${mxn}€</b> |`);
         calc();
     });
     $('#kwh').change(() => {
@@ -247,7 +255,7 @@
 
     var chartWidth = 600;
     if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-        chartWidth = 350
+        chartWidth = window.innerWidth;
     }
     const chartOptions = {
         width: chartWidth,
