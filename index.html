@@ -161,9 +161,9 @@
     const gradTagSumme = 100;
     const AP01 = 59;
     const ghgxn2021 = [ 95.6, 96.5, 97.8, 98.3, 98.4, 98.8, 99.6, 100.5, 101.5, 106.1, 115.7, 115.7 ];
-    const ghgxnFix = [ 147.6, 147.2, 159.8, 164.0, 165.6, 169.3 ];
+    const ghgxnFix = [ 147.6, 147.2, 159.8, 164.0, 165.6, 169.3, 175.2 ];
     const xegin2021 = [ 16.025, 19.713, 17.639, 17.733, 20.534, 24.994, 28.846, 35.794, 44.026, 63.263, 94.050, 81.027 ];
-    const xeginFix = [ 114.983, 85.545, 81.616, 133.486, 104.736, 95.448, 106.735, 171.319 ];
+    const xegin2022 = [ 114.983, 85.545, 81.616, 133.486, 104.736, 95.448, 106.735, 171.319, 234.505 ];
     const ghgx = 101.2;
     const co22021 = 4.55;
     const co2 = 5.46;
@@ -247,13 +247,13 @@
     var ghgxn = 200;
     $('#ghgxn').val(ghgxn);
     $('#ghgxn-label').html(`Erdgas Handel und Gewerbe (GHGXn) | <b>${ghgxn}€</b> |`);
-    var xegin = 190;
+    var xegin = 220;
     $('#xegin').val(xegin);
     $('#xegin-label').html(`European Gas Index (XEGIn) | <b>${xegin}€</b> |`);
-    var lexn = 102.0;
+    var lexn = 102.7;
     $('#lexn').val(lexn);
     $('#lexn-label').html(`Index tariflicher Löhne (LEXn) | <b>${lexn}€</b> |`);
-    var mxn = 148.4;
+    var mxn = 156.3;
     $('#mxn').val(mxn);
     $('#mxn-label').html(`Index Erzeugerpreise (MXn) | <b>${mxn}€</b> |`);
     var gasumlage = 2.419
@@ -349,7 +349,7 @@
         var newXEGIn = 0;
         var XEGInAvg2021 = 0;
         for (let i = 0; i < month.length; i++) {
-            const xegiMonth = xeginFix[i] || xegin;
+            const xegiMonth = xegin2022[i] || xegin;
             xeginStats[i].value = xegiMonth;
             const xegiCalc = gradTag[i] * ((xegiMonth / 100) + (co2 / 100))
             const xegiCalc2021 = gradTag[i] * ((xegin2021[i] / 100) + (co22021 / 100))
