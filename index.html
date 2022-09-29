@@ -88,12 +88,6 @@
             <text id="mxn-label"></text><text style="margin-left: 5px;" id="mxn-diff"></text></label>
             <input type="range" class="form-range" min="50" max="250" step="0.5" id="mxn">
         </div>
-        <div class="center advanced-settings">
-            <label for="gasumlage" class="form-label">
-            <i class="fa-solid fa-circle-info info-icon" data-toggle="tooltip" title="<em>Gasumlage</em><br>Wegen der Gasknappheit, steigender Großhandelspreise und zur Vermeidung von Insolvenzen und Lieferausfällen kann ab dem 1. Oktober 2022 eine Gasumlage von 2,419 ct/kWh erhoben werden. Die Umlage ist bis zum 1. April 2024 befristet. Sie kann alle drei Monate anhand der tatsächlichen Kostenhöhe aktualisiert werden (<a class='link-primary' href='https://www.bundesnetzagentur.de/DE/Fachthemen/ElektrizitaetundGas/Versorgungssicherheit/aktuelle_gasversorgung/artikel.html?gtp=1059506_list%253D6' target=_blank>bundesnetzagentur.de</a>). Wird auf Basis des absoluten Verbrauchs und des Verteilerschlüssels für die Monate Oktober bis Dezember errechnet."></i>
-            <text id="gasumlage-label"></text><text style="margin-left: 5px;" id="gasumlage-diff"></text></label>
-            <input type="range" class="form-range" min="0.0" max="5.0" step="0.001" id="gasumlage" disabled>
-        </div>
         <div class="center">
             <div id="totalCost" class="total-cost"></div>
         </div>
@@ -132,20 +126,6 @@
                             <td id="summaryAP01nTotal"></td>
                         </tr>
                     </tbody>
-                    <thead>
-                        <tr>
-                            <th scope="col">Gasumlage</th>
-                            <th scope="col">Verbrauch (anteilig Okt-Dez)</th>
-                            <th scope="col">Preis (brutto)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="summaryGasumlage"></td>
-                            <td id="summaryGasumlageVerbrauch"></td>
-                            <td id="summaryGasumlageTotal"></td>
-                        </tr>
-                    </tbody>
                 </table>
             </div>
         </div>
@@ -158,7 +138,6 @@
 <script type="text/javascript">
     const month = [ 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember' ];
     const gradTag = [ 17, 15, 13, 8, 4, (4/3), (4/3), (4/3), 3, 8, 12, 16 ];
-    const gradTagSumme = 100;
     const AP01 = 59;
     const ghgxn2021 = [ 95.6, 96.5, 97.8, 98.3, 98.4, 98.8, 99.6, 100.5, 101.5, 106.1, 115.7, 115.7 ];
     const ghgxnFix = [ 147.6, 147.2, 159.8, 164.0, 165.6, 169.3, 175.2 ];
@@ -171,7 +150,6 @@
     const mxn2021 = 106.2;
     const LEX = 88.8;
     const MX = 100.3;
-    const gasumlage2022 = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 2.419, 2.419, 2.419 ];
     const ghgxnStats = [
         { time: '2022-01', value: 0 },
         { time: '2022-02', value: 0 },
@@ -228,20 +206,6 @@
         { time: '2022-11', value: 0 },
         { time: '2022-12', value: 0 },
     ]
-    const gasUmlageStats = [
-        { time: '2022-01', value: 0 },
-        { time: '2022-02', value: 0 },
-        { time: '2022-03', value: 0 },
-        { time: '2022-04', value: 0 },
-        { time: '2022-05', value: 0 },
-        { time: '2022-06', value: 0 },
-        { time: '2022-07', value: 0 },
-        { time: '2022-08', value: 0 },
-        { time: '2022-09', value: 0 },
-        { time: '2022-10', value: 0 },
-        { time: '2022-11', value: 0 },
-        { time: '2022-12', value: 0 },
-    ]
 
     var house = 86.38; // Petersberg
     var ghgxn = 200;
@@ -256,9 +220,6 @@
     var mxn = 156.3;
     $('#mxn').val(mxn);
     $('#mxn-label').html(`Index Erzeugerpreise (MXn) | <b>${mxn}€</b> |`);
-    var gasumlage = 2.419
-    $('#gasumlage').val(gasumlage);
-    $('#gasumlage-label').html(`Gasumlage (ct/kWh) | <b>${gasumlage}ct</b> |`);
     var kwh = 7500;
     $('#kwh').val(kwh);
     $('#kwh-label').html(`Jahresverbrauch: <b>${(kwh / 1000).toFixed(1)}</b> MWh`);
@@ -284,11 +245,6 @@
     $('#mxn').change(() => {
         mxn = $('#mxn').val();
         $('#mxn-label').html(`Index Erzeugerpreise (MXn) | <b>${mxn}€</b> |`);
-        calc();
-    });
-    $('#gasumlage').change(() => {
-        gasumlage = $('#gasumlage').val();
-        $('#gasumlage-label').html(`Gasumlage (ct/kWh) | <b>${gasumlage}ct</b> |`);
         calc();
     });
     $('#kwh').change(() => {
@@ -320,7 +276,6 @@
     const egixChart = chart.addLineSeries({title: 'XEGIn', priceLineColor: '#0000ff', color: '#0000ff'});
     const lexnChart = chart.addLineSeries({title: 'LEXn', priceLineColor: '#00ff00', color: '#00ff00'});
     const mxnChart = chart.addLineSeries({title: 'MXn', priceLineColor: '#ff7f00', color: '#ff7f00'});
-    const umlageChart = chart.addLineSeries({title: 'Gasumlage', priceLineColor: '#ff7fff', color: '#ff7fff'});
 
     function calc() {
         // calc GHGXn
@@ -387,23 +342,6 @@
             $('#mxn-diff').css('color', '#E20D0D');
         }
 
-        let GasUmlageTotal = 0;
-        let GasUmlageVerbrauch = 0;
-        let GasUmlagePreisAktuell = 2.419;
-        for (let i = 0; i < month.length; i++) {
-            const angerechneterVerbrauch = (kwh / gradTagSumme) * gradTag[i];
-            const gasUmlageMonth = (angerechneterVerbrauch * gasumlage2022[i]) / 100;
-            gasUmlageStats[i].value = gasumlage2022[i];
-            if (gasumlage2022[i] > 0) {
-                GasUmlagePreisAktuell = gasumlage2022[i];
-            }
-            GasUmlageTotal += gasUmlageMonth;
-            if (gasUmlageMonth > 0) {
-                GasUmlageVerbrauch += angerechneterVerbrauch;
-            }
-            console.log(`${month[i]} Gradtag:${gradTag[i]} Verbrauch:${angerechneterVerbrauch} Kosten:${round(gasUmlageMonth)}€`);
-        }
-
         const nettoArbeitsPreis = AP01 * (GHGXnGHGX + XEGInXEGI)
         const bruttoArbeitspreis = nettoArbeitsPreis * 1.19;
         const nettoGrundPreis = house * ( 0.8 + (0.08 * lexn / LEX) + (0.12 * mxn / MX));
@@ -416,18 +354,14 @@
         $('#summaryGP04nMonth').html(`${round(bruttoGrundPreis)}€`);
         $('#summaryGP04nTotal').html(`${round(bruttoGrundPreis * 12)}€`);
         $('#summaryAP01nTotal').html(`${round(verbrauchsPreis)}€`);
-        $('#summaryGasumlage').html(`${GasUmlagePreisAktuell}ct`);
-        $('#summaryGasumlageVerbrauch').html(`${round(GasUmlageVerbrauch)}kWh`);
-        $('#summaryGasumlageTotal').html(`${round(GasUmlageTotal)}€`);
         
         gasPreisChart.setData(ghgxnStats);
         egixChart.setData(xeginStats);
         lexnChart.setData(lexnStats);
         mxnChart.setData(mxnStats);
-        umlageChart.setData(gasUmlageStats);
         chart.timeScale().fitContent();
 
-        $('#totalCost').html(`${round((bruttoGrundPreis * 12) + verbrauchsPreis + GasUmlageTotal)}€<br>Abschlag: ${round(bruttoGrundPreis + (verbrauchsPreis / 12) + (GasUmlageTotal / 12))}€`);
+        $('#totalCost').html(`${round((bruttoGrundPreis * 12) + verbrauchsPreis)}€<br>Abschlag: ${round(bruttoGrundPreis + (verbrauchsPreis / 12))}€`);
         $('#formulaAP01n').text(`\\[AP01n = ${AP01} * (0.5 * {${round(newGHGXn)} \\over ${ghgx}} + 0.5 * {${round(newXEGIn)} \\over 22.91})\\]`);
         $('#formulaGP04n').text(`\\[GP04n = ${house} * (0.8 + 0.08 * {${round(lexn)} \\over ${LEX}} + 0.12 * {${round(mxn)} \\over ${MX}})\\]`);
         MathJax.typeset();
