@@ -92,8 +92,7 @@
             <div id="totalCost" class="total-cost"></div>
         </div>
         <div class="center">
-            <div id="formulaAP01n"></div>
-            <div id="formulaGP04n"></div>
+            <div id="totalCostRed"></div>
         </div>
         <div class="center">
             <div>
@@ -115,19 +114,37 @@
                     <thead>
                         <tr>
                             <th scope="col">AP01n</th>
-                            <th scope="col">Verbrauch</th>
-                            <th scope="col">Arbeitspreis (brutto)</th>
+                            <th scope="col">Arbeitspreis/Monat </th>
+                            <th scope="col">Arbeitspreis (19% Mwst)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td id="summaryAP01n"></td>
-                            <td id="summaryKWh"></td>
+                            <td id="summaryAP01nMonth"></td>
                             <td id="summaryAP01nTotal"></td>
+                        </tr>
+                    </tbody>
+                    <thead>
+                        <tr>
+                            <th scope="col">Verbrauch</th>
+                            <th scope="col">Arbeitspreis/Monat</th>
+                            <th scope="col">Arbeitspreis (19%/7% Mwst)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="summaryKWh"></td>
+                            <td id="summaryAP01nMonthRed"></td>
+                            <td id="summaryAP01nTotalRed"></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div class="center">
+            <div id="formulaAP01n"></div>
+            <div id="formulaGP04n"></div>
         </div>
         <div class="center">
             <div id="stats"></div>
@@ -280,6 +297,8 @@
     function calc() {
         // calc GHGXn
         var newGHGXn = 0;
+        var newGHGXnJanSep = 0;
+        var newGHGXnOktDez = 0;
         var GHGXnAvg2021 = 0;
         for (let i = 0; i < month.length; i++) {
             const ghgxMonth = ghgxn2022[i] || ghgxn;
@@ -287,10 +306,17 @@
             const ghgxCalc = (gradTag[i] * ghgxMonth / 100);
             const ghgxCalc2021 = (gradTag[i] * ghgxn2021[i] / 100);
             newGHGXn += ghgxCalc;
+            if (i <= 9) {
+                newGHGXnJanSep += ghgxCalc;
+            } else {
+                newGHGXnOktDez += ghgxCalc;
+            }
             GHGXnAvg2021 += ghgxCalc2021;
             console.log(`${month[i]} Gradtag:${gradTag[i]} Preis:${ghgxMonth} GHGXn:${ghgxCalc}/${newGHGXn}`);
         }
         const GHGXnGHGX = 0.5 * (newGHGXn / ghgx);
+        const GHGXnGHGXJanSep = 0.5 * (newGHGXnJanSep / ghgx);
+        const GHGXnGHGXOktDez = 0.5 * (newGHGXnOktDez / ghgx);
         console.log(`0.5 * ${newGHGXn} / ${ghgx} = ${round(GHGXnGHGX)}`);
         const GHGXnDiff = round((newGHGXn / GHGXnAvg2021 - 1) * 100);
         if (GHGXnDiff < 0) {
@@ -302,6 +328,8 @@
         }
         // calc XEGIn
         var newXEGIn = 0;
+        var newXEGInJanSep = 0;
+        var newXEGInOktDez = 0;
         var XEGInAvg2021 = 0;
         for (let i = 0; i < month.length; i++) {
             const xegiMonth = xegin2022[i] || xegin;
@@ -309,10 +337,17 @@
             const xegiCalc = gradTag[i] * ((xegiMonth / 100) + (co2 / 100))
             const xegiCalc2021 = gradTag[i] * ((xegin2021[i] / 100) + (co22021 / 100))
             newXEGIn += xegiCalc;
+            if (i <= 9) {
+                newXEGInJanSep += xegiCalc;
+            } else {
+                newXEGInOktDez += xegiCalc;
+            }
             XEGInAvg2021 += xegiCalc2021;
             console.log(`${month[i]} Gradtag:${gradTag[i]} Preis:${xegiMonth} XEGIn:${xegiCalc}/${newXEGIn}`);
         }
         const XEGInXEGI = 0.5 * newXEGIn / 22.91;
+        const XEGInXEGIJanSep = 0.5 * (newXEGInJanSep / 22.91);
+        const XEGInXEGIOktDez = 0.5 * (newXEGInOktDez / 22.91);
         console.log(`0.5 * ${newXEGIn} / 22.91 = ${round(XEGInXEGI)}`);
         const XEGInDiff = round((newXEGIn / XEGInAvg2021 - 1) * 100);
         if (XEGInDiff < 0) {
@@ -343,17 +378,26 @@
         }
 
         const nettoArbeitsPreis = AP01 * (GHGXnGHGX + XEGInXEGI)
+        const nettoArbeitsPreisJanSep = AP01 * (GHGXnGHGXJanSep + XEGInXEGIJanSep);
+        const nettoArbeitsPreisOktDez = AP01 * (GHGXnGHGXOktDez + XEGInXEGIOktDez);
         const bruttoArbeitspreis = nettoArbeitsPreis * 1.19;
+        const bruttoArbeitspreisJanSep = nettoArbeitsPreisJanSep * 1.19;
+        const bruttoArbeitspreisOktDez = nettoArbeitsPreisOktDez * 1.07;
+        const bruttoArbeitspreisReduziert = bruttoArbeitspreisJanSep + bruttoArbeitspreisOktDez;
         const nettoGrundPreis = house * ( 0.8 + (0.08 * lexn / LEX) + (0.12 * mxn / MX));
         const bruttoGrundPreis = nettoGrundPreis * 1.19;
         const verbrauchsPreis = bruttoArbeitspreis * (kwh / 1000);
+        const verbrauchsPreisReduziert = bruttoArbeitspreisReduziert * (kwh / 1000);
         console.log(`59 * (${GHGXnGHGX} + ${XEGInXEGI}) = ${nettoArbeitsPreis}`)
         $('#summaryAP01n').html(`${round(nettoArbeitsPreis)}€`);
+        $('#summaryAP01nMonth').html(`${round(bruttoArbeitspreis)}€`);
+        $('#summaryAP01nMonthRed').html(`${round(bruttoArbeitspreisReduziert)}€`);
         $('#summaryGP04n').html(`${round(nettoGrundPreis)}€`);
         $('#summaryKWh').html(`${kwh / 1000}MWh`);
         $('#summaryGP04nMonth').html(`${round(bruttoGrundPreis)}€`);
         $('#summaryGP04nTotal').html(`${round(bruttoGrundPreis * 12)}€`);
         $('#summaryAP01nTotal').html(`${round(verbrauchsPreis)}€`);
+        $('#summaryAP01nTotalRed').html(`${round(verbrauchsPreisReduziert)}€`);
         
         gasPreisChart.setData(ghgxnStats);
         egixChart.setData(xeginStats);
@@ -361,7 +405,10 @@
         mxnChart.setData(mxnStats);
         chart.timeScale().fitContent();
 
-        $('#totalCost').html(`${round((bruttoGrundPreis * 12) + verbrauchsPreis)}€<br>Abschlag: ${round(bruttoGrundPreis + (verbrauchsPreis / 12))}€`);
+        const jahresGesamtPreis = (bruttoGrundPreis * 12) + verbrauchsPreis;
+        const jahresGesamtPreisReduziert = (bruttoGrundPreis * 12) + verbrauchsPreisReduziert;
+        $('#totalCost').html(`${round(jahresGesamtPreis)}€<br>Abschlag: ${round(bruttoGrundPreis + (verbrauchsPreis / 12))}€`);
+        $('#totalCostRed').html(`Mit 7% Mwst. ab Oktober, reduziert sich der Gesamtpreis um ca. ${round(jahresGesamtPreis - jahresGesamtPreisReduziert)}€ (${round((jahresGesamtPreis / jahresGesamtPreisReduziert - 1) * 100)}%)`);
         $('#formulaAP01n').text(`\\[AP01n = ${AP01} * (0.5 * {${round(newGHGXn)} \\over ${ghgx}} + 0.5 * {${round(newXEGIn)} \\over 22.91})\\]`);
         $('#formulaGP04n').text(`\\[GP04n = ${house} * (0.8 + 0.08 * {${round(lexn)} \\over ${LEX}} + 0.12 * {${round(mxn)} \\over ${MX}})\\]`);
         MathJax.typeset();
